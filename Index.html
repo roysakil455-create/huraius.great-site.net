@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Huraius - Digital Piggy Bank</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+background:white;
+}
+
+nav{
+background:#1976d2;
+color:white;
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+nav button{
+background:#ff9800;
+border:none;
+color:white;
+padding:8px 12px;
+border-radius:5px;
+}
+
+.container{
+max-width:400px;
+margin:40px auto;
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+input{
+padding:10px;
+border:1px solid #ccc;
+border-radius:5px;
+}
+
+button{
+padding:10px;
+border:none;
+background:#ff9800;
+color:white;
+border-radius:5px;
+}
+
+.hero{
+text-align:center;
+padding:80px 20px;
+}
+
+.progress{
+background:#eee;
+height:20px;
+border-radius:20px;
+overflow:hidden;
+}
+
+#progressBar{
+height:100%;
+width:0%;
+background:#1976d2;
+transition:0.5s;
+}
+
+a{
+color:#1976d2;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<nav>
+<h2>Huraius</h2>
+<div id="navArea"></div>
+</nav>
+
+<div id="app"></div>
+
+<script>
+
+let app=document.getElementById("app")
+let navArea=document.getElementById("navArea")
+
+function home(){
+
+navArea.innerHTML=`<button onclick="showLogin()">Login</button> <button onclick="showSignup()">Sign Up</button>`
+
+app.innerHTML=`
+<div class="hero">
+<h1>Your Digital Piggy Bank</h1>
+<p>Track your savings and achieve your financial goals</p>
+<button onclick="showSignup()">Start Saving</button>
+</div>
+`
+}
+
+function showSignup(){
+
+app.innerHTML=`
+<div class="container">
+<h2>Sign Up</h2>
+<input id="name" placeholder="Name">
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="signup()">Create Account</button>
+<a onclick="showLogin()">Already have an account?</a>
+</div>
+`
+}
+
+function signup(){
+
+let user={
+name:name.value,
+email:email.value,
+password:password.value,
+goal:0,
+saved:0,
+history:[]
+}
+
+localStorage.setItem("huraiusUser",JSON.stringify(user))
+
+alert("Account created")
+
+showLogin()
+
+}
+
+function showLogin(){
+
+app.innerHTML=`
+<div class="container">
+<h2>Login</h2>
+<input id="loginEmail" placeholder="Email">
+<input id="loginPassword" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+</div>
+`
+}
+
+function login(){
+
+let user=JSON.parse(localStorage.getItem("huraiusUser"))
+
+if(user && user.email===loginEmail.value && user.password===loginPassword.value){
+
+localStorage.setItem("logged","true")
+
+dashboard()
+
+}else{
+
+alert("Wrong login")
+
+}
+
+}
+
+function dashboard(){
+
+let user=JSON.parse(localStorage.getItem("huraiusUser"))
+
+navArea.innerHTML=`
+<button onclick="addMoneyPage()">Add Money</button>
+<button onclick="goalPage()">Set Goal</button>
+<button onclick="logout()">Logout</button>
+`
+
+let percent=user.goal? (user.saved/user.goal)*100 : 0
+
+app.innerHTML=`
+<div class="container">
+
+<h2>Welcome ${user.name}</h2>
+
+<p>Goal: ₹ ${user.goal}</p>
+
+<p>Saved: ₹ ${user.saved}</p>
+
+<div class="progress">
+<div id="progressBar" style="width:${percent}%"></div>
+</div>
+
+<h3>History</h3>
+
+<div id="history"></div>
+
+</div>
+`
+
+let historyDiv=document.getElementById("history")
+
+user.history.forEach(h=>{
+historyDiv.innerHTML+=`<p>₹${h.amount} - ${h.date}</p>`
+})
+
+}
+
+function addMoneyPage(){
+
+app.innerHTML=`
+<div class="container">
+<h2>Add Money</h2>
+<input id="amount" placeholder="Amount">
+<button onclick="addMoney()">Add</button>
+</div>
+`
+}
+
+function addMoney(){
+
+let user=JSON.parse(localStorage.getItem("huraiusUser"))
+
+let amount=Number(document.getElementById("amount").value)
+
+user.saved+=amount
+
+user.history.push({
+amount:amount,
+date:new Date().toLocaleString()
+})
+
+localStorage.setItem("huraiusUser",JSON.stringify(user))
+
+dashboard()
+
+}
+
+function goalPage(){
+
+app.innerHTML=`
+<div class="container">
+<h2>Set Goal</h2>
+<input id="goal" placeholder="Enter Goal">
+<button onclick="saveGoal()">Save</button>
+</div>
+`
+}
+
+function saveGoal(){
+
+let user=JSON.parse(localStorage.getItem("huraiusUser"))
+
+user.goal=Number(document.getElementById("goal").value)
+
+localStorage.setItem("huraiusUser",JSON.stringify(user))
+
+dashboard()
+
+}
+
+function logout(){
+
+localStorage.removeItem("logged")
+
+home()
+
+}
+
+home()
+
+</script>
+
+</body>
+</html>
